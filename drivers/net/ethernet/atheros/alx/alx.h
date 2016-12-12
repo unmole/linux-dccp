@@ -76,10 +76,18 @@ enum alx_device_quirks {
 	ALX_DEV_QUIRK_MSI_INTX_DISABLE_BUG = BIT(0),
 };
 
+#define ALX_FLAG_USING_MSIX	BIT(0)
+#define ALX_FLAG_USING_MSI	BIT(1)
+
 struct alx_priv {
 	struct net_device *dev;
 
 	struct alx_hw hw;
+
+	/* msi-x vectors */
+	int num_vec;
+	struct msix_entry *msix_entries;
+	char irq_lbl[IFNAMSIZ + 8];
 
 	/* all descriptor memory */
 	struct {
@@ -96,10 +104,6 @@ struct alx_priv {
 	unsigned int rx_ringsz;
 	unsigned int rxbuf_size;
 
-	struct page  *rx_page;
-	unsigned int rx_page_offset;
-	unsigned int rx_frag_size;
-
 	struct napi_struct napi;
 	struct alx_tx_queue txq;
 	struct alx_rx_queue rxq;
@@ -109,7 +113,7 @@ struct alx_priv {
 
 	u16 msg_enable;
 
-	bool msi;
+	int flags;
 
 	/* protects hw.stats */
 	spinlock_t stats_lock;

@@ -5,14 +5,14 @@ obj-vdso-y := elf.o gettimeofday.o sigreturn.o
 ccflags-vdso := \
 	$(filter -I%,$(KBUILD_CFLAGS)) \
 	$(filter -E%,$(KBUILD_CFLAGS)) \
+	$(filter -mmicromips,$(KBUILD_CFLAGS)) \
 	$(filter -march=%,$(KBUILD_CFLAGS))
 cflags-vdso := $(ccflags-vdso) \
 	$(filter -W%,$(filter-out -Wa$(comma)%,$(KBUILD_CFLAGS))) \
-	-O2 -g -fPIC -fno-common -fno-builtin -G 0 -DDISABLE_BRANCH_PROFILING \
+	-O2 -g -fPIC -fno-strict-aliasing -fno-common -fno-builtin -G 0 \
+	-DDISABLE_BRANCH_PROFILING \
 	$(call cc-option, -fno-stack-protector)
 aflags-vdso := $(ccflags-vdso) \
-	$(filter -I%,$(KBUILD_CFLAGS)) \
-	$(filter -E%,$(KBUILD_CFLAGS)) \
 	-D__ASSEMBLY__ -Wa,-gdwarf-2
 
 #
@@ -80,7 +80,7 @@ obj-vdso := $(obj-vdso-y:%.o=$(obj)/%.o)
 $(obj-vdso): KBUILD_CFLAGS := $(cflags-vdso) $(native-abi)
 $(obj-vdso): KBUILD_AFLAGS := $(aflags-vdso) $(native-abi)
 
-$(obj)/vdso.lds: KBUILD_CPPFLAGS := $(native-abi)
+$(obj)/vdso.lds: KBUILD_CPPFLAGS := $(ccflags-vdso) $(native-abi)
 
 $(obj)/vdso.so.dbg.raw: $(obj)/vdso.lds $(obj-vdso) FORCE
 	$(call if_changed,vdsold)

@@ -658,7 +658,7 @@ static int ea_put(tid_t tid, struct inode *inode, struct ea_buffer *ea_buf,
 	if (old_blocks)
 		dquot_free_block(inode, old_blocks);
 
-	inode->i_ctime = CURRENT_TIME;
+	inode->i_ctime = current_time(inode);
 
 	return 0;
 }
@@ -943,11 +943,10 @@ static int jfs_xattr_get(const struct xattr_handler *handler,
 }
 
 static int jfs_xattr_set(const struct xattr_handler *handler,
-			 struct dentry *dentry, const char *name,
-			 const void *value, size_t size, int flags)
+			 struct dentry *unused, struct inode *inode,
+			 const char *name, const void *value,
+			 size_t size, int flags)
 {
-	struct inode *inode = d_inode(dentry);
-
 	name = xattr_full_name(handler, name);
 	return __jfs_xattr_set(inode, name, value, size, flags);
 }
@@ -962,11 +961,10 @@ static int jfs_xattr_get_os2(const struct xattr_handler *handler,
 }
 
 static int jfs_xattr_set_os2(const struct xattr_handler *handler,
-			     struct dentry *dentry, const char *name,
-			     const void *value, size_t size, int flags)
+			     struct dentry *unused, struct inode *inode,
+			     const char *name, const void *value,
+			     size_t size, int flags)
 {
-	struct inode *inode = d_inode(dentry);
-
 	if (is_known_namespace(name))
 		return -EOPNOTSUPP;
 	return __jfs_xattr_set(inode, name, value, size, flags);
